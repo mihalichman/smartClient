@@ -1,0 +1,192 @@
+<html>
+ <HEAD>
+ <SCRIPT>var isomorphicDir="../isomorphic/";</SCRIPT>
+ <SCRIPT SRC=../isomorphic/system/modules/ISC_Core.js></SCRIPT>
+ <SCRIPT SRC=../isomorphic/system/modules/ISC_Foundation.js></SCRIPT>
+ <SCRIPT SRC=../isomorphic/system/modules/ISC_Containers.js></SCRIPT>
+ <SCRIPT SRC=../isomorphic/system/modules/ISC_Grids.js></SCRIPT>
+ <SCRIPT SRC=../isomorphic/system/modules/ISC_Forms.js></SCRIPT>
+ <SCRIPT SRC=../isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>
+ <SCRIPT SRC=../isomorphic/skins/Tahoe/load_skin.js></SCRIPT>
+ <SCRIPT SRC=../isomorphic/DataSourceLoader?dataSource=employees,tcodes></SCRIPT>
+
+ <link rel="stylesheet" type="text/css" href="style.css">
+
+ </HEAD>
+ <body>
+    <SCRIPT>
+        console.log(window.innerHeight);
+isc.Canvas.create({
+    ID:"snapContainer", 
+    height: "100%", width: "100%",
+    minHeight:280, minWidth:280,
+
+	children: [
+        // main layout
+        isc.HLayout.create({
+            width: "100%",
+            height: "100%",
+            margin : 10,
+            autoDraw: false,
+            snapOffsetTop: -30,
+            snapTo: "BL",
+            members: [
+                // main tree window
+                isc.TreeGrid.create({
+                        ID : "mainTree",
+                        autoDraw: false,
+                        canEdit: false,
+                        margin: 5,
+                        selectionAppearance: "simple",
+                        showSelectedStyle: false,
+                        showPartialSelection: true,
+                        cascadeSelection: true,
+
+                        dataSource: "tcodes",
+                        autoFetchData: true,
+                        height: "100%",
+                        title : "Hello main",
+                        border: 1,
+
+                        showOpenIcons:false,
+                        showDropIcons:false,
+
+                        snapTo: "TL",
+                        fields: [
+                            {name: "codename", froze: true},
+                            {name: "area", width: 50}
+                        ],
+                        dataProperties:{
+                            dataArrived:function (parentNode) {
+                                this.openAll();
+                                this.closeAll();
+                            }
+                        }
+                    }),
+
+                // settings area
+                isc.SectionStack.create({
+                    ID: "sectionStack",
+                    autoDraw: false,
+                    visibilityMode: "multiple",
+                    width: 200, height: "100%",
+                    margin: 5,
+                    backgroundColor: "white",
+                    
+                    border: 1,
+                    snapTo: "TR",
+                    
+                    sections: [
+                        {title: "View Settings", expanded: true, height: 25, padding: 5,  items: [
+                            isc.Label.create({height: 30, contents: "text from view"}),
+                            
+                            // view checbox
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"view checbox",
+                                styleName: "footerButton",
+                                click: function(){
+                                    if (mainTree.selectionAppearance == "checkbox"){
+                                        console.log(' set simple ')
+                                        mainTree.setSelectionType("simple");
+                                        mainTree.setSelectionAppearance("multiple");
+                                    }else{
+                                        console.log(' set checkbox ')
+                                        mainTree.setSelectionType("simple");
+                                        mainTree.setSelectionAppearance("checkbox");
+                                    }
+                                }
+                            }),
+
+                            // access to edit
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"edit access",
+                                styleName: "footerButton",
+                                click: function(){
+                                    if (mainTree.canEdit){
+                                        console.log(' edit disable ')
+                                        mainTree.setCanEdit(false);
+                                    }else{
+                                        console.log(' edit enable ')
+                                        mainTree.setCanEdit(true);
+                                    }
+                                }
+                            }),
+
+                            // rename column
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"rename column",
+                                styleName: "footerButton",
+                                click: function(){
+                                    // var fields = eval(mainTree.getFieldState());
+                                    // console.log(fields);
+                                    // fields[0]["title"] = "Names";
+                                    // console.log(fields);
+                                    // mainTree.setProperties({fields: fields});
+                                }
+                            })
+
+                        ]},
+                        {title: "Access Settings", expanded: false, canCollapse: true, height: 25, items: [ 
+                            isc.Label.create({height: 30, contents: "text from access"})
+                        ]},
+                        {title: "Data Settings", expanded: false, canCollapse: true, height: 25, valign: "center", items:  [
+                            isc.Label.create({height: 30, contents: "text from data"})
+                        ]}
+                    ]
+                    })
+            ]
+        }),
+
+        // console title label
+        isc.Label.create({
+            autoDraw: false,
+            ID: "footerTitle",
+            contents : "Console:",
+            styleName : "footeLabel",
+            margin: 5,
+            snapTo: "BL"
+        }),
+
+        // console data label
+        isc.Label.create({
+            autoDraw: false,
+            ID : "footerLabel",
+            contents : "Console data",
+            styleName : "footeLabel",
+            snapTo: "BL",
+            snapOffsetLeft: footerTitle.getWidth()
+        }),
+
+        // button setting view
+        isc.IButton.create({
+            ID: "SettButton",
+            title:"Settings",
+            autoDraw: false,
+            height: 30,
+            styleName: "footerButton",
+            snapOffsetLeft: -10,
+            snapOffsetTop: -10 ,
+            snapTo: "BR",
+            margin: 5,
+            click: function(){
+                if (mainTree.getWidth() == snapContainer.getWidth() - 20){
+                    sectionStack.show();
+                    footerLabel.setContents(" tree maximaize ")
+                }else{
+                    sectionStack.hide();
+                    footerLabel.setContents(" tree minimaize ");
+                }
+            }})
+        ]
+    })
+
+
+
+    </SCRIPT>
+</body></html>

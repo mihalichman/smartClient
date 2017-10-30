@@ -1,0 +1,39 @@
+.footeLabel {
+    position: fixed; /* Фиксированное положение */
+    bottom: 0; /* Левый нижний угол */
+    padding: 10px; /* Поля вокруг текста */
+    /* background: #39b54a; /* Цвет фона */
+    /* color: #fff; /* Цвет текста */
+    color: black;
+    width: 50%; /* Ширина слоя */
+    font-size: 20px;
+   }
+
+   .footerLabel2 {
+    position: fixed; /* Фиксированное положение */
+    bottom: 0; /* Левый нижний угол */
+    padding: 10px; /* Поля вокруг текста */
+    /* background: #39b54a; /* Цвет фона */
+    /* color: #fff; /* Цвет текста */
+    color:green;
+    width: 50%; /* Ширина слоя */
+    font-size: 40px;
+   }
+
+   .footerButton {
+    position: fixed; /* Фиксированное положение */
+    right: 0; bottom: 0; /* Левый нижний угол */
+    padding: 10px; /* Поля вокруг текста */
+    /* background: #39b54a; /* Цвет фона */
+    /* color: #fff; /* Цвет текста */
+    color: black;
+    /* font-size: 20px;*/
+   }
+
+   .rightSetting{
+       position: fixed;
+       right: 0; top: 10;
+       margin: 10;
+       background: white;
+       /* border: 1px solid;  */
+   }
