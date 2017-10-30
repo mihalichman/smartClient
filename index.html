@@ -28,19 +28,18 @@ isc.Canvas.create({
             height: "100%",
             margin : 10,
             autoDraw: false,
-            snapOffsetTop: -30,
-            snapTo: "BL",
+            snapTo: "T",
             members: [
                 // main tree window
                 isc.TreeGrid.create({
                         ID : "mainTree",
                         autoDraw: false,
                         canEdit: false,
-                        margin: 5,
                         selectionAppearance: "simple",
                         showSelectedStyle: false,
                         showPartialSelection: true,
                         cascadeSelection: true,
+                        styleName: "mainCanvas",
 
                         dataSource: "tcodes",
                         autoFetchData: true,
@@ -70,7 +69,7 @@ isc.Canvas.create({
                     autoDraw: false,
                     visibilityMode: "multiple",
                     width: 200, height: "100%",
-                    margin: 5,
+                    styleName: "mainCanvas",
                     backgroundColor: "white",
                     
                     border: 1,
