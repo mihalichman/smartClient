@@ -8,9 +8,10 @@
  <SCRIPT SRC=../isomorphic/system/modules/ISC_Forms.js></SCRIPT>
  <SCRIPT SRC=../isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>
  <SCRIPT SRC=../isomorphic/skins/Tahoe/load_skin.js></SCRIPT>
- <SCRIPT SRC=../isomorphic/DataSourceLoader?dataSource=employees,tcodes></SCRIPT>
+ <SCRIPT SRC=../isomorphic/DataSourceLoader?dataSource=employees,tcodes,tlevels></SCRIPT>
 
  <link rel="stylesheet" type="text/css" href="style.css">
+ <script src="https://use.fontawesome.com/4d2c4449af.js"></script>
 
  </HEAD>
  <body>
@@ -22,127 +23,8 @@ isc.Canvas.create({
     minHeight:280, minWidth:280,
 
 	children: [
-        // main layout
-        isc.HLayout.create({
-            width: "100%",
-            height: "100%",
-            margin : 10,
-            autoDraw: false,
-            snapTo: "T",
-            members: [
-                // main tree window
-                isc.TreeGrid.create({
-                        ID : "mainTree",
-                        autoDraw: false,
-                        canEdit: false,
-                        selectionAppearance: "simple",
-                        showSelectedStyle: false,
-                        showPartialSelection: true,
-                        cascadeSelection: true,
-                        styleName: "mainCanvas",
 
-                        dataSource: "tcodes",
-                        autoFetchData: true,
-                        height: "100%",
-                        title : "Hello main",
-                        border: 1,
-
-                        showOpenIcons:false,
-                        showDropIcons:false,
-
-                        snapTo: "TL",
-                        fields: [
-                            {name: "codename", froze: true},
-                            {name: "area", width: 50}
-                        ],
-                        dataProperties:{
-                            dataArrived:function (parentNode) {
-                                this.openAll();
-                                this.closeAll();
-                            }
-                        }
-                    }),
-
-                // settings area
-                isc.SectionStack.create({
-                    ID: "sectionStack",
-                    autoDraw: false,
-                    visibilityMode: "multiple",
-                    width: 200, height: "100%",
-                    styleName: "mainCanvas",
-                    backgroundColor: "white",
-                    
-                    border: 1,
-                    snapTo: "TR",
-                    
-                    sections: [
-                        {title: "View Settings", expanded: true, height: 25, padding: 5,  items: [
-                            isc.Label.create({height: 30, contents: "text from view"}),
-                            
-                            // view checbox
-                            isc.IButton.create({
-                                margin: 5, 
-                                height: 30,
-                                title:"view checbox",
-                                styleName: "footerButton",
-                                click: function(){
-                                    if (mainTree.selectionAppearance == "checkbox"){
-                                        console.log(' set simple ')
-                                        mainTree.setSelectionType("simple");
-                                        mainTree.setSelectionAppearance("multiple");
-                                    }else{
-                                        console.log(' set checkbox ')
-                                        mainTree.setSelectionType("simple");
-                                        mainTree.setSelectionAppearance("checkbox");
-                                    }
-                                }
-                            }),
-
-                            // access to edit
-                            isc.IButton.create({
-                                margin: 5, 
-                                height: 30,
-                                title:"edit access",
-                                styleName: "footerButton",
-                                click: function(){
-                                    if (mainTree.canEdit){
-                                        console.log(' edit disable ')
-                                        mainTree.setCanEdit(false);
-                                    }else{
-                                        console.log(' edit enable ')
-                                        mainTree.setCanEdit(true);
-                                    }
-                                }
-                            }),
-
-                            // rename column
-                            isc.IButton.create({
-                                margin: 5, 
-                                height: 30,
-                                title:"rename column",
-                                styleName: "footerButton",
-                                click: function(){
-                                    // var fields = eval(mainTree.getFieldState());
-                                    // console.log(fields);
-                                    // fields[0]["title"] = "Names";
-                                    // console.log(fields);
-                                    // mainTree.setProperties({fields: fields});
-                                }
-                            })
-
-                        ]},
-                        {title: "Access Settings", expanded: false, canCollapse: true, height: 25, items: [ 
-                            isc.Label.create({height: 30, contents: "text from access"})
-                        ]},
-                        {title: "Data Settings", expanded: false, canCollapse: true, height: 25, valign: "center", items:  [
-                            isc.Label.create({height: 30, contents: "text from data"})
-                        ]}
-                    ]
-                    })
-            ]
-        }),
-
-        // console title label
+// console title label
         isc.Label.create({
             autoDraw: false,
             ID: "footerTitle",
@@ -162,6 +44,415 @@ isc.Canvas.create({
             snapOffsetLeft: footerTitle.getWidth()
         }),
 
+        // main layout
+        isc.HLayout.create({
+            width: "100%",
+            height: "100%",
+            margin : 10,
+            autoDraw: false,
+            snapTo: "T",
+            members: [
+                isc.VLayout.create({
+                    width: "100%",
+                    height: "100%",
+                    autoDraw: false,
+                    styleName: "mainCanvas",
+                    members: [
+                        // main tree window
+                        isc.TreeGrid.create({
+                        ID : "mainTree",
+                        autoDraw: false,
+                        canEdit: false,
+                        editEvent: "click",
+                        editByCell: true,
+                        modalEditing: true,
+                        canSort: true,
+                        selectionAppearance: "simple",
+                        showSelectedStyle: false,
+                        showPartialSelection: true,
+                        showFilterEditor: false,
+                        SortState: false,
+
+                        cascadeSelection: true,
+                    
+                        dataSource: "tcodes",
+                        autoFetchData: true,
+                        height: "100%",
+                        title : "Hello main",
+                        border: 1,
+
+                        treeRootValue: "0",
+                        
+                        showOpenIcons:false,
+                        showDropIcons:false,
+
+                        canRemoveRecords: true,
+                        
+                        warnOnRemoval: true,
+                        warnOnRemovalMessage: " You realy want delete this record? ",
+
+                        alternateRecordStyles:true,
+                        cellClick: function (record, rowNum, colNum) {
+                            footerLabel.setContents(
+                                "Clicked <b>\"" + record.codename + "\"</b>, Area: <b style=\"font-color:green\">" + record.area + ",  Population: " + record.population
+                            )
+                        },
+
+                        snapTo: "TL",
+                        fields: [
+                            {name: "codename"},
+                            {name: "area", width: 50},
+                            {name: "population", width: 100},
+                            {name: "codelogo", width: 100}
+                        ]
+                        // dataProperties:{
+                        //     dataArrived:function (parentNode) {
+                                // this.openAll();
+                                // this.closeAll();
+                        //     }
+                        // }
+                    }),
+                        isc.VLayout.create({
+                            width: "100%",
+                            height: 30,
+                            autoDraw: false,
+                            snapTo: "B",
+                            border: 1,
+                            members: [
+                                isc.HLayout.create({
+                                    ID: "editLayout",
+                                    width: "100%",
+                                    height: 30,
+                                    autoDraw: false,
+                                    snapTo: "B",
+                                    border:1,
+                                    members: [
+                                    isc.DynamicForm.create({
+                                            dataSource: "tcodes",
+                                            ID:"addForm",
+                                            width: "100%",
+                                            autoDraw: false,
+                                            snapTo: "BL",
+                                            fields: [
+                                                {
+                                                    name:"codename",
+                                                    type:"text",
+                                                    width: 150,
+                                                    height: 25,
+                                                    title:"Name"
+                                                },
+                                                {
+                                                    name:"parentid",
+                                                    type:"select",
+                                                    width:240,
+                                                    title:"Parent",
+                                                    optionDataSource:"tcodes",
+                                                    displayField:"codename",
+                                                    pickListWidth:450,
+                                                    pickListFields: [
+                                                        { name: "codename" }
+                                                    ]
+                                                },
+                                                {
+                                                    name:"levid",
+                                                    type:"select",
+                                                    width:240,
+                                                    title:"Level",
+                                                    optionDataSource:"tlevels",
+                                                    displayField:"levname",
+                                                    pickListWidth:450,
+                                                    pickListFields: [
+                                                        { name: "levname" }
+                                                    ]
+                                                },
+                                                {
+                                                    name:"area",
+                                                    type:"integer",
+                                                    width: 50,
+                                                    title:"Area"
+                                                },
+                                                {
+                                                    name:"population",
+                                                    type:"integer",
+                                                    width: 50,
+                                                    title:"Population"
+                                                }
+                                            ]
+                                        }),
+                                        isc.IButton.create({
+                                            margin: 5, 
+                                            height: 30,
+                                            autoDraw: false,
+                                            title:"ADD RECORD",
+                                            snapTo: "BR",
+                                            click: function(){
+                                                if (!addForm.getField("parentid")){
+                                                    addForm.getField("parentid").setValue(0)
+                                                }
+                                                addForm.setSaveOperationType("add")
+                                                addForm.saveData();
+                                                mainTree.fetchData();
+
+                                                if (editLayout.isVisible()){
+                                                    editLayout.hide();
+                                                }else{
+                                                    editLayout.show();
+                                                }
+                                                console.log("add row main  ")
+                                            }
+                                        })
+                                    ]
+                                }),
+                                isc.HLayout.create({
+                                    width: "100%",
+                                    height: 30,
+                                    autoDraw: false,
+                                    snapTo: "B",
+                                    members: [
+                                        // add button
+                                        isc.IButton.create({
+                                            margin: 5, 
+                                            width: 100,
+                                            height: 30,
+                                            autoDraw: false,
+                                            title:"ADD",
+                                            click: function(){
+                                                if (editLayout.isVisible()){
+                                                    editLayout.hide();
+                                                }else{
+                                                    editLayout.show();
+                                                }
+                                                console.log("add row")
+                                            }
+                                        }),
+
+                                        // edit label
+                                        isc.Label.create({
+                                            autoDraw: false,
+                                            width: 5,
+                                            ID: "editLabel",
+                                            contents : "EDIT",
+                                            margin: 5,
+                                            snapTo: "BR"
+                                        }),
+
+                                        // checbox label
+                                        isc.Label.create({
+                                            autoDraw: false,
+                                            width: 5,
+                                            ID: "checkboxLabel",
+                                            contents : "CHECKBOX",
+                                            margin: 5,
+                                            snapTo: "BR",
+                                            styleName: "statusLabel"
+                                        }),
+
+                                        // sort label
+                                        isc.Label.create({
+                                            autoDraw: false,
+                                            width: 5,
+                                            ID: "sortLabel",
+                                            contents : "SORT",
+                                            margin: 5,
+                                            snapTo: "BR",
+                                            styleName: "statusLabel"
+                                        }),
+
+                                        // filte label
+                                        isc.Label.create({
+                                            autoDraw: false,
+                                            width: 5,
+                                            ID: "filterLabel",
+                                            contents : "FILTER",
+                                            margin: 5,
+                                            snapTo: "BR",
+                                            styleName: "statusLabel"
+                                        })
+                                    ]
+                                })
+                            ]
+                        })
+                    ]
+                }),
+                
+                // settings area
+                isc.SectionStack.create({
+                    ID: "sectionStack",
+                    autoDraw: false,
+                    visibilityMode: "multiple",
+                    width: 150, 
+                    height: "100%",
+            
+                    styleName: "mainCanvas",
+                    backgroundColor: "white",
+                    
+                    border: 1,
+                    snapTo: "TR",
+                    
+                    sections: [
+                        {title: "View Settings", expanded: true, height: 25, resizeable:false, padding: 5,  items: [                            
+                            // view checbox button
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Checkbox",
+                                styleName: "footerButton",
+                                click: function(){
+                                    if (mainTree.selectionAppearance == "checkbox"){
+                                        mainTree.setSelectionAppearance("multiple");
+                                        checkboxLabel.setStyleName("statusLabelDisable");
+                                    }else{
+                                        mainTree.setSelectionAppearance("checkbox");
+                                        checkboxLabel.setStyleName("statusLabelEnable");
+                                    }
+                                }
+                            }),
+
+                            // view logo column button
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Codelogo",
+                                styleName: "footerButton",
+                                click: function(){
+                                    if (mainTree.fieldIsVisible("codelogo")){
+                                        mainTree.hideField("codelogo");
+                                    }else{
+                                        mainTree.showField("codelogo");
+                                    }
+                                    
+                                }
+                            }),
+
+                            // view sort column button
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Sort",
+                                styleName: "footerButton",
+                                click: function(){
+                                    if (mainTree.canSort){
+                                        sortLabel.setStyleName("statusLabelDisable");
+                                        mainTree.canSort = false;
+                                    }else{
+                                        sortLabel.setStyleName("statusLabelEnable");
+                                        mainTree.canSort = true;
+                                    }
+                                }
+                            }),
+
+                            // enable/disable filter 
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Filter",
+                                styleName: "footerButton",
+                                click: function(){
+                                    if (mainTree.showFilterEditor){
+                                        filterLabel.setStyleName("statusLabelDisable");
+                                        mainTree.setShowFilterEditor(false);
+                                    }else{
+                                        filterLabel.setStyleName("statusLabelEnable");
+                                        mainTree.setShowFilterEditor(true);
+                                    }
+                                }
+                            }),
+
+                            // rename column button;  TODO seletc column and text fiel to rename
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Rename column",
+                                styleName: "footerButton",
+                                click: function(){
+                                    
+                                    // set new view tree
+                                    mainTree.getCellCSSText = function (record, rowNum, colNum) {
+                                        return "font-weight:bold; font-size:  20px; color: green;";};
+                                    mainTree.redraw();
+                                }
+                            }),
+
+                            // Button save settings
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Save Pref",
+                                styleName: "footerButton",
+                                click: function(){
+                                    // save column state local
+                                    var state = mainTree.getViewState();
+                                    isc.Offline.put("treeState", state)
+                                    
+                                    // save tree view local
+                                    var font = mainTree.getCellCSSText;
+                                    isc.Offline.put("treeFont", font)
+                                }
+                            }),
+
+                            // Button reset settings
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Reset Pref",
+                                styleName: "footerButton",
+                                click: function(){
+                                    // delete column state saved config
+                                    isc.Offline.remove("treeState");
+
+                                    // dlete font state saved config
+                                    isc.Offline.remove("treeFont");
+
+                                    // reset view tree
+                                    mainTree.getCellCSSText = function (record, rowNum, colNum) {return "";};
+                                    mainTree.redraw();
+                                }
+                            })
+                        ]},
+                        {title: "Access Settings", expanded: true, canCollapse: true, resizeable:false, height: 25, items: [ 
+                            // access to edit button
+                            isc.IButton.create({
+                                margin: 5, 
+                                height: 30,
+                                title:"Edit access",
+                                styleName: "footerButton",
+                                click: function(){
+                                    if (mainTree.canEdit){
+                                        console.log(' edit disable ');
+                                        editLabel.setStyleName("statusLabelDisable");
+                                        mainTree.setCanEdit(false);
+                                        console.log(mainTree.canRemoveRecords);
+                                        mainTree.canRemoveRecords = false;
+                                        console.log(mainTree.canRemoveRecords);
+                                        mainTree.redraw();
+                                        mainTree.refreshFields();
+                                    }else{
+                                        console.log(' edit enable ')
+                                        editLabel.setStyleName("statusLabelEnable");
+                                        mainTree.setCanEdit(true);
+
+
+                                        console.log(mainTree.canRemoveRecords);
+                                        
+                                        mainTree.canRemoveRecords = true;
+
+                                        console.log(mainTree.canRemoveRecords);
+
+                                    }
+                                }
+                            })
+                        ]},
+                        {title: "Data Settings", expanded: false, canCollapse: true, height: 25, valign: "center", items:  [
+                            
+                        ]}
+                    ]
+                    })
+                   
+
+            ]
+        }),
+
+
         // button setting view
         isc.IButton.create({
             ID: "SettButton",
@@ -174,9 +465,10 @@ isc.Canvas.create({
             snapTo: "BR",
             margin: 5,
             click: function(){
-                if (mainTree.getWidth() == snapContainer.getWidth() - 20){
+                console.log(sectionStack.isVisible());
+                if (!sectionStack.isVisible()){
                     sectionStack.show();
-                    footerLabel.setContents(" tree maximaize ")
+                    footerLabel.setContents(" tree maximaize ");
                 }else{
                     sectionStack.hide();
                     footerLabel.setContents(" tree minimaize ");
@@ -184,6 +476,54 @@ isc.Canvas.create({
             }})
         ]
     })
+   
+    editLayout.hide();
+
+    // get tree edit state
+    if (mainTree.canEdit){
+        editLabel.setStyleName("statusLabelEnable");
+    }else{
+        editLabel.setStyleName("statusLabelDisable");
+    }
+
+    // get checkbox view state
+    if (mainTree.selectionAppearance == "checkbox"){
+        checkboxLabel.setStyleName("statusLabelEnable");
+    }else{
+        checkboxLabel.setStyleName("statusLabelDisable");
+    }
+
+    // get filter enable state
+    if (mainTree.showFilterEditor){
+        filterLabel.setStyleName("statusLabelEnable");
+    }else{
+        filterLabel.setStyleName("statusLabelDisable");
+    }
+
+    // get sort enable state
+    if (mainTree.canSort){
+        sortLabel.setStyleName("statusLabelEnable");
+    }else{
+        sortLabel.setStyleName("statusLabelDisable");
+    }
+
+    // set saved configuration
+    var savedState = isc.Offline.get("treeState");
+    console.log(savedState);
+    if (savedState) {
+        mainTree.setViewState(savedState);
+        console.log("load saved state");
+    }
+
+    var savedFont = isc.Offline.get("treeFont");
+    console.log(savedFont);
+    if (savedFont) {
+        console.log(typeof(savedFont));
+        mainTree.getCellCSSText = eval('(' + savedFont + ')');
+        console.log(mainTree.getCellCSSText);
+        // console.log(mainTree.recordBaseStyleProperty);
+        console.log("load saved font");
+    }
 
 
 
